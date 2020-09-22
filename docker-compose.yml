@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  vuejs:
+    build: ./
+    volumes:
+      - ./app/:/usr/share/nginx/html/
+    environment:
+      - PORT=80
+    ports:
+      - "80:80"

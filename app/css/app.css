@@ -1,0 +1,64 @@
+.header {
+  text-align: right;
+  margin-bottom: 5px;
+}
+
+#working, #error {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.line-bg {
+  background-color: #00be00;
+  color: #fff;
+  border-color: #00be00;
+}
+
+.error-bg {
+  background-color: #ff0000;
+  color: #fff;
+  border-color: #ff0000;
+}
+
+.avartar {
+  width:32px;
+}
+
+.product-box {
+  float: left;
+  position: relative;
+  width: 160px;
+  height: 400px;
+  margin: 5px;
+}
+
+.product-cover img {
+  width:150px;
+}
+
+.product-title {
+  font-weight: bold;
+}
+
+.cart-item-box .product-cover img {
+  width:32px;
+}
+
+.product-add-cart {
+  position: absolute;
+  bottom: 5px;
+  left:30px;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+.text-strikethrough {
+  text-decoration: line-through;
+}
+
+.text-red {
+  color:red;
+}
