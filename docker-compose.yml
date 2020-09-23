@@ -2,10 +2,16 @@ version: "3"
 
 services:
   vuejs:
-    build: ./
-    volumes:
-      - ./app/:/usr/share/nginx/html/
+    build: 
+      context: ./
+      dockerfile: Dockerfile.dev
     environment:
+      - HOST=vuejs
       - PORT=80
+    volumes:
+      - ./app/src:/app/src
+      - ./app/test:/app/test
+      - ./app/static:/app/static
+      - ./app/package.json:/app/package.json
     ports:
       - "80:80"
