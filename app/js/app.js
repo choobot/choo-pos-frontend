@@ -3,15 +3,23 @@ Vue.prototype.$http = axios
 thb = function(n){
     return numeral(n).format('0,0.00')+'฿'
 }
+dateFormat = function(d){
+    return d.replace('T', '').replace('Z', '');
+}
 let app = new Vue({
     el: '#app',
     data: {
-        isLogin: false,
-        isCheckout: false,
+        STATE: {
+            LOGIN: 'login',
+            CHECKOUT: 'checkout',
+            RECEIPT: 'receipt',
+            LOGS: 'logs'
+        },
+        state: null,
         token: null,
         error: null,
         isWorking: false,
-        user: null,
+        user: {},
         products: null,
         preCart: {
            items:[]
@@ -19,12 +27,17 @@ let app = new Vue({
         cart: {
             items:[]
         },
-        receipt: null
+        receipt: null,
+        log: {
+            user_logs:[]
+        }
     },
     mounted: function() {
+        this.state = this.STATE.LOGIN
         this.checkLogin()
     },
     methods: {
+        thb: thb,        
         checkLogin: function() {
             if(localStorage.token) {
                 this.token = localStorage.token
@@ -74,15 +87,11 @@ let app = new Vue({
                 })
                 .then(function(response) {
                     vm.user = response.data
-                    vm.isLogin = true
+                    vm.state = vm.STATE.CHECKOUT
                 }).catch(error => {
-                    vm.isLogin = false
+                    vm.state = vm.STATE.LOGIN
                     delete localStorage.token
                     if (error.response) {
-                        if(error.response.status == 401) {
-                            vm.isLogin = false
-                            delete localStorage.token
-                        }
                         vm.error = error.response.data.error.code+' '+error.response.data.error.error
                     } else if (error.request) {
                         vm.error = error.request
@@ -106,12 +115,12 @@ let app = new Vue({
                     }
                 })
                 .then(function(response) {
-                    vm.isLogin = false
+                    vm.state = vm.STATE.LOGIN
                     delete localStorage.token
                 }).catch(error => {
                     if (error.response) {
                         if(error.response.status == 401) {
-                            vm.isLogin = false
+                            vm.state = vm.STATE.LOGIN
                             delete localStorage.token
                         }
                         vm.error = error.response.data.error.code+' '+error.response.data.error.error
@@ -138,7 +147,7 @@ let app = new Vue({
                 }).catch(error => {
                     if (error.response) {
                         if(error.response.status == 401) {
-                            vm.isLogin = false
+                            vm.state = vm.STATE.LOGIN
                             delete localStorage.token
                         }
                         vm.error = error.response.data.error.code+' '+error.response.data.error.error
@@ -183,7 +192,7 @@ let app = new Vue({
                 }).catch(error => {
                     if (error.response) {
                         if(error.response.status == 401) {
-                            vm.isLogin = false
+                            vm.state = vm.STATE.LOGIN
                             delete localStorage.token
                         }
                         vm.error = error.response.data.error.code+' '+error.response.data.error.error
@@ -205,12 +214,12 @@ let app = new Vue({
                     this.receipt = this.cart
                     this.receipt.cash = Number(cash)
                     this.receipt.change = (this.receipt.cash-this.receipt.total)
-                    this.isCheckout = true
+                    this.state = this.STATE.RECEIPT
                 }
             }
         },
         nextOrder: function() {
-            this.isCheckout = false
+            this.state = this.STATE.CHECKOUT
             this.preCart = {
                 "items": []
             }
@@ -219,7 +228,34 @@ let app = new Vue({
             },
             this.receipt = null
         },
-        thb: thb
+        logs: function() {
+            this.state = this.STATE.LOGS
+            let vm = this
+            vm.isWorking = true
+            this.$http
+                .get(apiEndpoint+'/user/log', {
+                    headers: {
+                        "Authorization": vm.token
+                    }
+                })
+                .then(function(response) {
+                    vm.log = response.data
+                }).catch(error => {
+                    if (error.response) {
+                        if(error.response.status == 401) {
+                            vm.state = vm.STATE.LOGIN
+                            delete localStorage.token
+                        }
+                        vm.error = error.response.data.error.code+' '+error.response.data.error.error
+                    } else if (error.request) {
+                        vm.error = error.request
+                    } else {
+                        vm.error = error.message
+                    }
+                }).finally(function(response) {
+                    vm.isWorking = false
+                })
+        }
     }
 })
 
@@ -278,6 +314,20 @@ Vue.component('product-box', {
             <td class="text-right">{{ thb(item.product.price) }}</td>
             <td class="text-right text-red">{{ thb((item.price-item.product.price)) }}</td>
             <td class="text-right">{{ thb(item.price) }}</td>
+        </tr>
+    `
+  })
+
+  Vue.component('user-log-box', {
+    props: ['user_log'],
+    methods: {
+        thb: thb,
+        dateFormat: dateFormat
+    },
+    template: `
+        <tr>
+            <td>{{ dateFormat(user_log.time) }}</td>
+            <td><img v-bind:src="user_log.user.picture" class="avartar img-circle"> {{ user_log.user.name }}</td>
         </tr>
     `
   })

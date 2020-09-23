@@ -11,10 +11,8 @@
 
 <body>
     <div id="app">
-        <span id="working" v-if="isWorking" class="line-bg">Working...</span>
-        <span id="error" class="error-bg">{{ error }}</span>
         
-        <div id="login-box" v-if="!isLogin && !isWorking" class="panel panel-success text-center">
+        <div id="login-box" v-if="state == STATE.LOGIN && !isWorking" class="panel panel-success text-center">
             <div class="panel-heading">
                 <h3 class="panel-title">Little Brown Book Shop</h3>
             </div>
@@ -24,13 +22,30 @@
             </div>
         </div>
 
-        <div id="user-box" v-if="isLogin" class="header">
-            <img v-bind:src="user.picture" class="avartar img-circle">
-            {{ user.name }}
-            <button @click="logout" type="button" class="btn btn-default btn-sm">Logout</button>
-        </div>
+        <nav id="nav-box" v-if="state != STATE.LOGIN" class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <div class="navbar-brand text-bold">
+                        Little Brown Book Shop       
+                    </div>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li v-bind:class="{ active: state == STATE.CHECKOUT || state == STATE.RECEIPT }">
+                        <a href="javascript:void(0)" @click="nextOrder">Checkout</a>
+                    </li>
+                    <li v-bind:class="{ active: state == STATE.LOGS }">
+                        <a href="javascript:void(0)" @click="logs">Logs</a>
+                    </li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <img v-bind:src="user.picture" class="avartar img-circle"> {{ user.name }}
+                    <button @click="logout" type="button" class="btn btn-default">Logout</button>
+                </form>
+            </div>
 
-        <div class="container-fluid" v-if="isLogin && !isCheckout">
+        </nav>
+
+        <div id="checkout-box" v-if="state == STATE.CHECKOUT" class="container-fluid" >
             <div class="row">
                 <div class="col-md-8">
                     <div id="products-box" class="panel panel-default">
@@ -101,14 +116,14 @@
                         </div>
                         <div v-if="cart.items.length > 0" class="panel-footer text-center">
                             <button @click="checkout" type="button" class="btn btn-lg btn-success">Checkout</button>
-                            <button @click="nextOrder" type="button" class="btn btn-default">Cancel</button>
+                            <button @click="nextOrder" type="button" class="btn btn-default">Reset</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="receipt-box" v-if="isLogin && isCheckout" class="panel panel-success">
+        <div id="receipt-box" v-if="state == STATE.RECEIPT" class="panel panel-success">
             <div class="panel-heading">
                 <h3 class="panel-title text-center">Order completed</h3>
             </div>
@@ -158,6 +173,35 @@
                 <button @click="nextOrder" type="button" class="btn btn-lg btn-success">Proceed next order</button>
             </div>
         </div>
+
+        <div id="checkout-box" v-if="state == STATE.LOGS" class="container-fluid" >
+            <div id="logs-box" class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title text-center">User Logs</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-striped">
+                        <thead class="line-bg">
+                            <tr>
+                                <th scope="col">Date/Time</th>
+                                <th scope="col">User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr is="user-log-box" class="user-log-box"
+                                v-for="(user_log, index) in log.user_logs"
+                                v-bind:key="index"
+                                v-bind:user_log="user_log">
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <span id="working" v-show="isWorking" class="line-bg">Working...</span>
+        <span id="error" class="error-bg">{{ error }}</span>
+
     </div>
     <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.2/axios.js"></script>
