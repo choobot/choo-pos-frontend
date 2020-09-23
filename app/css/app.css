@@ -28,13 +28,25 @@
 .product-box {
   float: left;
   position: relative;
-  width: 160px;
+  width: 150px;
   height: 400px;
   margin: 5px;
 }
 
+.product-box .panel-body {
+  padding: 0;
+}
+
+.product-box .product-title {
+  padding: 0 5px 0 5px;
+}
+
+.product-box .product-price {
+  padding: 0 5px 0 5px;
+}
+
 .product-cover img {
-  width:150px;
+  width:100%;
 }
 
 .product-title {
@@ -47,8 +59,8 @@
 
 .product-add-cart {
   position: absolute;
-  bottom: 5px;
-  left:30px;
+  bottom: 0;
+  width: 100%;
 }
 
 .text-bold {
