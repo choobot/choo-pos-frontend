@@ -1,4 +1,4 @@
-# choo-pos-front-end
+# choo-pos-frontend
 
 ## Note
 - Frontend Repo: https://github.com/choobot/choo-pos-backend
@@ -14,17 +14,17 @@
 
 ## Local Running for Development
 - To enable Webpack Hot Reloading on Web Browser (via WebSocket), please config host mapping in `/etc/hosts` to have `127.0.0.1	vuejs`
-- Config environment variables in .env
-- $ ./dev.sh
+- Config environment variables in `.env`
+- `$ ./dev.sh`
 
 ## Unit Testing
 - Running locally (see above)
-- $ ./test.sh
+- `$ ./test.sh`
 
 ## Production Deployment
 - Create Heroku App in Heroku Dashboard
 - Config environment variables in .env
-- $ ./prod.sh
+- `$ ./prod.sh`
 
 ## Tech Stack
 - Vue
