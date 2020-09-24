@@ -3,13 +3,17 @@ FROM node:lts-alpine as build-stage
 ARG API_ENDPOINT
 
 WORKDIR /app/
-COPY ./app/ ./
 
 RUN apk add gettext
+
+COPY ./app/package.json ./package.json
+RUN npm install
+
+COPY ./app/ ./
+
 RUN envsubst '\$API_ENDPOINT' < config/prod.env.js > config/prod.env.js.tmp
 RUN mv config/prod.env.js.tmp config/prod.env.js
 
-RUN npm install
 RUN npm run build
 
 # production stage

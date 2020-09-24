@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker cp   vue-docker_vuejs_1:/app/package.json ./app/package.json
+docker cp choo-pos-frontend_vuejs_1:/app/package.json ./app/package.json

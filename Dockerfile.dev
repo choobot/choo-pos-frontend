@@ -2,13 +2,16 @@ FROM node:lts-alpine
 ARG API_ENDPOINT
 
 WORKDIR /app/
-COPY ./app/ ./
 
 RUN apk add gettext
-RUN envsubst '\$API_ENDPOINT' < config/dev.env.js > config/dev.env.js.tmp
-RUN mv config/dev.env.js.tmp config/dev.env.js
 
+COPY ./app/package.json ./package.json
 RUN npm install -g vue-cli
 RUN npm install
+
+COPY ./app/ ./
+
+RUN envsubst '\$API_ENDPOINT' < config/dev.env.js > config/dev.env.js.tmp
+RUN mv config/dev.env.js.tmp config/dev.env.js
 
 CMD [ "npm", "run", "dev" ]
