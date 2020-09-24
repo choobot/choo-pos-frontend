@@ -5,6 +5,8 @@ services:
     build: 
       context: ./
       dockerfile: Dockerfile.dev
+      args:
+        - API_ENDPOINT=${API_ENDPOINT}
     environment:
       - HOST=vuejs
       - PORT=80

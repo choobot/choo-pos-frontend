@@ -252,7 +252,7 @@ const STATE = {
   LOGS: "logs",
 };
 
-let apiEndpoint = "https://1807a7aa24e4.ngrok.io";
+const API_ENDPOINT = process.env.API_ENDPOINT;
 
 export default {
   name: "App",
@@ -309,7 +309,7 @@ export default {
       let vm = this;
       vm.isWorking = true;
       this.$http
-        .get(apiEndpoint + "/user/token?visa=" + visa)
+        .get(API_ENDPOINT + "/user/token?visa=" + visa)
         .then(function (response) {
           vm.token = "Bearer " + response.data.token;
           localStorage.token = vm.token;
@@ -335,7 +335,7 @@ export default {
       let vm = this;
       vm.isWorking = true;
       this.$http
-        .get(apiEndpoint + "/user", {
+        .get(API_ENDPOINT + "/user", {
           headers: {
             Authorization: vm.token,
           },
@@ -364,13 +364,13 @@ export default {
     },
     login: function (event) {
       window.location.href =
-        apiEndpoint + "/user/login?callback=" + window.origin;
+        API_ENDPOINT + "/user/login?callback=" + window.origin;
     },
     logout: function (event) {
       let vm = this;
       vm.isWorking = true;
       this.$http
-        .get(apiEndpoint + "/user/logout", {
+        .get(API_ENDPOINT + "/user/logout", {
           headers: {
             Authorization: vm.token,
           },
@@ -403,7 +403,7 @@ export default {
       let vm = this;
       vm.isWorking = true;
       this.$http
-        .get(apiEndpoint + "/product", {
+        .get(API_ENDPOINT + "/product", {
           headers: {
             Authorization: vm.token,
           },
@@ -453,7 +453,7 @@ export default {
       let vm = this;
       vm.isWorking = true;
       this.$http
-        .put(apiEndpoint + "/cart", vm.preCart, {
+        .put(API_ENDPOINT + "/cart", vm.preCart, {
           headers: {
             Authorization: vm.token,
           },
@@ -515,7 +515,7 @@ export default {
       let vm = this;
       vm.isWorking = true;
       this.$http
-        .get(apiEndpoint + "/user/log", {
+        .get(API_ENDPOINT + "/user/log", {
           headers: {
             Authorization: vm.token,
           },
