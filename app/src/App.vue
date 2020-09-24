@@ -2,7 +2,7 @@
   <div id="app">
     <div
       id="login-box"
-      v-if="state == STATE.LOGIN && !isWorking"
+      v-if="state == STATE.LOGIN"
       class="panel panel-success text-center"
     >
       <div class="panel-heading">
@@ -10,7 +10,7 @@
       </div>
       <div class="panel-body">
         <p>Please login to continue</p>
-        <a href="javascript:void(0)" @click="login"
+        <a id="login-button" href="javascript:void(0)" @click="login"
           ><img src="./assets/images/btn_login_base.png"
         /></a>
       </div>
@@ -29,16 +29,23 @@
               active: state == STATE.CHECKOUT || state == STATE.RECEIPT,
             }"
           >
-            <a href="javascript:void(0)" @click="nextOrder">Checkout</a>
+            <a id="checkout-nav" href="javascript:void(0)" @click="nextOrder"
+              >Checkout</a
+            >
           </li>
           <li v-bind:class="{ active: state == STATE.LOGS }">
-            <a href="javascript:void(0)" @click="logs">Logs</a>
+            <a id="logs-nav" href="javascript:void(0)" @click="logs">Logs</a>
           </li>
         </ul>
         <form class="navbar-form navbar-right">
           <img v-bind:src="user.picture" class="avartar img-circle" />
           {{ user.name }}
-          <button @click="logout" type="button" class="btn btn-default">
+          <button
+            id="logout-button"
+            @click="logout"
+            type="button"
+            class="btn btn-default"
+          >
             Logout
           </button>
         </form>
@@ -132,13 +139,19 @@
             </div>
             <div v-if="cart.items.length > 0" class="panel-footer text-center">
               <button
-                @click="checkout"
+                id="cart-payment"
+                @click="payment"
                 type="button"
                 class="btn btn-lg btn-success"
               >
-                Checkout
+                Payment
               </button>
-              <button @click="nextOrder" type="button" class="btn btn-default">
+              <button
+                id="cart-reset"
+                @click="nextOrder"
+                type="button"
+                class="btn btn-default"
+              >
                 Reset
               </button>
             </div>
@@ -181,56 +194,59 @@
             <tr>
               <td></td>
               <td class="text-bold">Total</td>
-              <td class="text-bold text-right">{{ thb(receipt.subtotal) }}</td>
-              <td class="text-bold text-right text-red">
+              <td id="order-subtotal" class="text-bold text-right">{{ thb(receipt.subtotal) }}</td>
+              <td id="order-discount" class="text-bold text-right text-red">
                 {{ thb(receipt.total - receipt.subtotal) }}
               </td>
-              <td class="text-bold text-right">{{ thb(receipt.total) }}</td>
+              <td id="order-total" class="text-bold text-right">{{ thb(receipt.total) }}</td>
             </tr>
             <tr>
               <td></td>
               <td colspan="3" class="text-bold">Cash</td>
-              <td class="text-bold text-right">{{ thb(receipt.cash) }}</td>
+              <td id="order-cash" class="text-bold text-right">{{ thb(receipt.cash) }}</td>
             </tr>
             <tr>
               <td></td>
               <td colspan="3" class="text-bold">Change</td>
-              <td class="text-bold text-right">{{ thb(receipt.change) }}</td>
+              <td id="order-change" class="text-bold text-right">{{ thb(receipt.change) }}</td>
             </tr>
           </tfoot>
         </table>
       </div>
       <div class="panel-footer text-center">
-        <button @click="nextOrder" type="button" class="btn btn-lg btn-success">
-          Proceed next order
+        <button
+          id="next-order"
+          @click="nextOrder"
+          type="button"
+          class="btn btn-lg btn-success"
+        >
+          <span class="text-underline">N</span>ext order
         </button>
       </div>
     </div>
 
-    <div id="checkout-box" v-if="state == STATE.LOGS" class="container-fluid">
-      <div id="logs-box" class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title text-center">User Logs</h3>
-        </div>
-        <div class="panel-body">
-          <table class="table table-striped">
-            <thead class="line-bg">
-              <tr>
-                <th scope="col">Date/Time</th>
-                <th scope="col">User</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                is="user-log-box"
-                class="user-log-box"
-                v-for="(user_log, index) in log.user_logs"
-                v-bind:key="index"
-                v-bind:user_log="user_log"
-              ></tr>
-            </tbody>
-          </table>
-        </div>
+    <div id="logs-box" v-if="state == STATE.LOGS" class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title text-center">User Logs</h3>
+      </div>
+      <div class="panel-body">
+        <table class="table table-striped">
+          <thead class="line-bg">
+            <tr>
+              <th scope="col">Date/Time</th>
+              <th scope="col">User</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              is="user-log-box"
+              class="user-log-box"
+              v-for="(user_log, index) in log.user_logs"
+              v-bind:key="index"
+              v-bind:user_log="user_log"
+            ></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -240,6 +256,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import ProductBox from "./components/ProductBox";
 import CartItemBox from "./components/CartItemBox";
 import OrderItemBox from "./components/OrderItemBox";
@@ -301,19 +318,19 @@ export default {
       }
     },
     getVisa: function () {
-      let uri = window.location.search.substring(1);
+      let uri = this.getWindow().location.search.substring(1);
       let params = new URLSearchParams(uri);
       return params.get("visa");
     },
     getToken: function (visa) {
       let vm = this;
       vm.isWorking = true;
-      this.$http
+      axios
         .get(API_ENDPOINT + "/user/token?visa=" + visa)
         .then(function (response) {
           vm.token = "Bearer " + response.data.token;
           localStorage.token = vm.token;
-          window.location.href = window.origin;
+          vm.setLocation(vm.getWindow().origin);
         })
         .catch((error) => {
           if (error.response) {
@@ -334,7 +351,7 @@ export default {
     getUser: function () {
       let vm = this;
       vm.isWorking = true;
-      this.$http
+      axios
         .get(API_ENDPOINT + "/user", {
           headers: {
             Authorization: vm.token,
@@ -342,7 +359,7 @@ export default {
         })
         .then(function (response) {
           vm.user = response.data;
-          vm.state = vm.STATE.CHECKOUT;
+          vm.nextOrder();
         })
         .catch((error) => {
           vm.state = vm.STATE.LOGIN;
@@ -363,13 +380,14 @@ export default {
         });
     },
     login: function (event) {
-      window.location.href =
-        API_ENDPOINT + "/user/login?callback=" + window.origin;
+      this.setLocation(
+        API_ENDPOINT + "/user/login?callback=" + this.getWindow().origin
+      );
     },
     logout: function (event) {
       let vm = this;
       vm.isWorking = true;
-      this.$http
+      axios
         .get(API_ENDPOINT + "/user/logout", {
           headers: {
             Authorization: vm.token,
@@ -378,11 +396,13 @@ export default {
         .then(function (response) {
           vm.state = vm.STATE.LOGIN;
           delete localStorage.token;
+          vm.token = null;
         })
         .catch((error) => {
           if (error.response) {
             if (error.response.status == 401) {
               vm.state = vm.STATE.LOGIN;
+              vm.token = null;
               delete localStorage.token;
             }
             vm.error =
@@ -402,7 +422,7 @@ export default {
     getProducts: function (visa) {
       let vm = this;
       vm.isWorking = true;
-      this.$http
+      axios
         .get(API_ENDPOINT + "/product", {
           headers: {
             Authorization: vm.token,
@@ -452,7 +472,7 @@ export default {
     updateCart: function (itemIndex) {
       let vm = this;
       vm.isWorking = true;
-      this.$http
+      axios
         .put(API_ENDPOINT + "/cart", vm.preCart, {
           headers: {
             Authorization: vm.token,
@@ -481,8 +501,8 @@ export default {
           vm.isWorking = false;
         });
     },
-    checkout: function () {
-      let cash = prompt(
+    payment: function () {
+      let cash = this.prompt(
         "Total: " + this.thb(this.cart.total) + ". Please enter cash:"
       );
       if (cash != null) {
@@ -491,7 +511,7 @@ export default {
           cash < this.cart.total ||
           cash > Number.MAX_SAFE_INTEGER
         ) {
-          this.checkout();
+          this.payment();
         } else {
           this.receipt = this.cart;
           this.receipt.cash = Number(cash);
@@ -505,16 +525,16 @@ export default {
       this.preCart = {
         items: [],
       };
-      (this.cart = {
+      this.cart = {
         items: [],
-      }),
-        (this.receipt = null);
+      };
+      this.receipt = null;
     },
     logs: function () {
       this.state = this.STATE.LOGS;
       let vm = this;
       vm.isWorking = true;
-      this.$http
+      axios
         .get(API_ENDPOINT + "/user/log", {
           headers: {
             Authorization: vm.token,
@@ -604,7 +624,7 @@ export default {
   font-weight: bold;
 }
 
-.cart-item-box .product-cover img {
+.cart-item-cover img {
   width: 32px;
 }
 
@@ -624,5 +644,9 @@ export default {
 
 .text-red {
   color: red;
+}
+
+.text-underline {
+  text-decoration: underline;
 }
 </style>
