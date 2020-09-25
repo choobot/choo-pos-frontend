@@ -16,7 +16,9 @@
     - CTRL + P : Cart <ins>P</ins>ayment
     - CTRL + R : Cart <ins>R</ins>eset
     - CTRL + N : <ins>N</ins>ext Order (after Payment)
-- Display ribbon on promotion products only, user can hover to see a promotion detail 
+- Display ribbon on promotion products only, user can hover to see a promotion detail
+- After payment, order will be created via API
+- Customer can scan QR Code to get E-Receipt
 
 ## Prerequisites for Development
 - Mac or Linux which can run shell script
@@ -45,6 +47,7 @@
 - Axios
 - Bootstrap
 - Numeral
+- qrcode.vue
 - Babel
 - Webpack
 - Docker

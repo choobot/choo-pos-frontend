@@ -16,7 +16,11 @@
       </div>
     </div>
 
-    <nav id="nav-box" v-if="state != STATE.LOGIN" class="navbar navbar-default">
+    <nav
+      id="nav-box"
+      v-if="![STATE.NONE, STATE.LOGIN, STATE.PUBLIC_RECEIPT].includes(state)"
+      class="navbar navbar-default"
+    >
       <div class="container-fluid">
         <div class="navbar-header">
           <div class="navbar-brand text-bold">
@@ -208,14 +212,17 @@
 
     <div
       id="receipt-box"
-      v-if="state == STATE.RECEIPT"
+      v-if="[STATE.RECEIPT, STATE.PUBLIC_RECEIPT].includes(state)"
       class="panel panel-success"
     >
-      <div class="panel-heading">
+      <div class="panel-heading" v-if="state == STATE.RECEIPT">
         <h3 class="panel-title text-center">Order completed</h3>
       </div>
       <div class="panel-body">
-        <div class="order-id"><span class="text-bold">Order/Receipt No:</span> {{ receipt.id }}</div>
+        <h4>Little Brown Book Shop</h4>
+        <div class="order-id">
+          <span class="text-bold">Order/Receipt No:</span> {{ receipt.id }}
+        </div>
         <table class="table table-striped">
           <thead class="line-bg">
             <tr>
@@ -266,8 +273,12 @@
             </tr>
           </tfoot>
         </table>
+        <div class="order-qrcode" v-if="state == STATE.RECEIPT">
+          <div>Scan for E-Receipt</div>
+          <qrcode-vue v-bind:value="receipt.url" size="120"></qrcode-vue>
+        </div>
       </div>
-      <div class="panel-footer text-center">
+      <div class="panel-footer text-center" v-if="state == STATE.RECEIPT">
         <button
           id="next-order"
           @click="nextOrder"
@@ -317,12 +328,15 @@ import ProductBox from "./components/ProductBox";
 import CartItemBox from "./components/CartItemBox";
 import OrderItemBox from "./components/OrderItemBox";
 import UserLogBox from "./components/UserLogBox";
+import QrcodeVue from "qrcode.vue";
 
 const STATE = {
+  NONE: "none",
   LOGIN: "login",
   CHECKOUT: "checkout",
   RECEIPT: "receipt",
   LOGS: "logs",
+  PUBLIC_RECEIPT: "public_receipt",
 };
 
 const API_ENDPOINT = process.env.API_ENDPOINT;
@@ -354,14 +368,15 @@ export default {
     };
   },
   components: {
+    QrcodeVue,
     ProductBox,
     CartItemBox,
     OrderItemBox,
     UserLogBox,
   },
   mounted: function () {
-    this.state = this.STATE.LOGIN;
-    this.checkLogin();
+    this.state = this.STATE.NONE;
+    this.checkState();
     setInterval(function () {
       const barcodeInput = document.getElementById("scan-barcode-input");
       if (barcodeInput) {
@@ -370,8 +385,11 @@ export default {
     }, 100);
   },
   methods: {
-    checkLogin: function () {
-      if (localStorage.token) {
+    checkState: function () {
+      let orderId = this.getOrderId();
+      if (orderId != null) {
+        this.getReceipt(orderId);
+      } else if (localStorage.token) {
         this.token = localStorage.token;
         this.getUser();
         this.getProducts();
@@ -381,6 +399,11 @@ export default {
           this.getToken(visa);
         }
       }
+    },
+    getOrderId: function () {
+      let uri = this.getWindow().location.search.substring(1);
+      let params = new URLSearchParams(uri);
+      return params.get("order");
     },
     getVisa: function () {
       let uri = this.getWindow().location.search.substring(1);
@@ -585,8 +608,8 @@ export default {
           this.payment();
         } else {
           let vm = this;
-          let req = vm.preCart
-          req.cash = Number(cash)
+          let req = vm.preCart;
+          req.cash = Number(cash);
           vm.isWorking = true;
           axios
             .post(API_ENDPOINT + "/order", req, {
@@ -597,6 +620,8 @@ export default {
             .then(function (response) {
               vm.receipt = response.data;
               vm.receipt.change = vm.receipt.cash - vm.receipt.total;
+              vm.receipt.url =
+                vm.getWindow().origin + "/?order=" + vm.receipt.id;
               vm.state = vm.STATE.RECEIPT;
             })
             .catch((error) => {
@@ -674,6 +699,32 @@ export default {
         }
         this.barcode = "";
       }
+    },
+    getReceipt: function (orderId) {
+      let vm = this;
+      vm.isWorking = true;
+      axios
+        .get(API_ENDPOINT + "/order/" + orderId)
+        .then(function (response) {
+          vm.receipt = response.data;
+          vm.receipt.change = vm.receipt.cash - vm.receipt.total;
+          vm.state = vm.STATE.PUBLIC_RECEIPT;
+        })
+        .catch((error) => {
+          if (error.response) {
+            vm.error =
+              error.response.data.error.code +
+              " " +
+              error.response.data.error.error;
+          } else if (error.request) {
+            vm.error = error.request;
+          } else {
+            vm.error = error.message;
+          }
+        })
+        .finally(function (response) {
+          vm.isWorking = false;
+        });
     },
   },
 };
@@ -785,5 +836,10 @@ export default {
 
 .order-id {
   margin-bottom: 10px;
+}
+
+.order-qrcode {
+  width: 120px;
+  margin: auto;
 }
 </style>
