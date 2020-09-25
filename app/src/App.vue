@@ -397,6 +397,8 @@ export default {
         let visa = this.getVisa();
         if (visa != null) {
           this.getToken(visa);
+        } else {
+          this.state = this.STATE.LOGIN;
         }
       }
     },
