@@ -154,7 +154,12 @@ describe("App", () => {
       },
     };
     axios.get.mockResolvedValue(resp);
-    const wrapper = shallowMount(App);
+    const wrapper = shallowMount(App, {
+      mocks: {
+        thb,
+        getWindow,
+      },
+    });
     const button = wrapper.find("#logs-nav");
     await button.trigger("click");
     expect(wrapper.find("#login-box").exists()).toBe(false);
@@ -206,6 +211,7 @@ describe("App", () => {
       },
       mocks: {
         thb,
+        getWindow,
       },
     });
     await wrapper.vm.addToCart("9781473667815");
@@ -267,6 +273,7 @@ describe("App", () => {
       },
       mocks: {
         thb,
+        getWindow,
       },
     });
     await wrapper.vm.removeFromCart(0);
@@ -316,6 +323,7 @@ describe("App", () => {
       },
       mocks: {
         thb,
+        getWindow,
       },
     });
     await wrapper.vm.removeFromCart(0);
@@ -381,6 +389,7 @@ describe("App", () => {
       mocks: {
         thb,
         prompt,
+        getWindow,
       },
     });
     const button = wrapper.find("#cart-payment");
@@ -417,6 +426,7 @@ describe("App", () => {
       },
       mocks: {
         thb,
+        getWindow,
       },
     });
     const button = wrapper.find("#next-order");
@@ -464,6 +474,7 @@ describe("App", () => {
         };
       },
       mocks: {
+        getWindow,
         thb,
       },
     });
@@ -480,11 +491,14 @@ describe("App", () => {
   it("click #logout-button then render LOGIN state", async () => {
     const resp = {};
     axios.get.mockResolvedValue(resp);
-    const wrapper = shallowMount(App);
+    const wrapper = shallowMount(App, {
+      mocks: {
+        getWindow,
+      },
+    });
     const button = wrapper.find("#logout-button");
     await button.trigger("click");
     expect(wrapper.vm.token).toBeNull();
-    expect(wrapper.find("#login-box").exists()).toBe(true);
     expect(wrapper.find("#nav-box").exists()).toBe(false);
     expect(wrapper.find("#checkout-box").exists()).toBe(false);
     expect(wrapper.find("#receipt-box").exists()).toBe(false);
