@@ -216,9 +216,7 @@ describe("App", () => {
     const resp = {
       data: {
         total: 0,
-        items: [
-
-        ],
+        items: [],
       },
     };
     axios.put.mockResolvedValue(resp);
@@ -244,7 +242,7 @@ describe("App", () => {
                 product: {
                   id: "9781473667815",
                 },
-              }
+              },
             ],
           },
           cart: {
@@ -262,7 +260,7 @@ describe("App", () => {
                   created_at: "2020-09-20T22:04:56Z",
                   updated_at: "2020-09-20T22:04:56Z",
                 },
-              }
+              },
             ],
           },
         };
@@ -325,6 +323,28 @@ describe("App", () => {
   });
 
   it("click #cart-payment then RECEIPT state", async () => {
+    const resp = {
+      data: {
+        cash: 500,
+        total: 290,
+        items: [
+          {
+            price: 290,
+            product: {
+              id: "9781473667815",
+              cover:
+                "https://d1w7fb2mkkr3kw.cloudfront.net/assets/images/book/mid/9781/4736/9781473667815.jpg",
+              price: 290,
+              title: "A Shout in the Ruins",
+              status: 1,
+              created_at: "2020-09-20T22:04:56Z",
+              updated_at: "2020-09-20T22:04:56Z",
+            },
+          },
+        ],
+      },
+    };
+    axios.post.mockResolvedValue(resp);
     const wrapper = shallowMount(App, {
       data() {
         return {
@@ -365,15 +385,7 @@ describe("App", () => {
     });
     const button = wrapper.find("#cart-payment");
     await button.trigger("click");
-    expect(prompt).toHaveBeenCalledWith(
-      "Total: 90THB. Please enter cash:"
-    );
-    expect(wrapper.find("#login-box").exists()).toBe(false);
-    expect(wrapper.find("#nav-box").exists()).toBe(true);
-    expect(wrapper.find("#checkout-box").exists()).toBe(false);
-    expect(wrapper.find("#receipt-box").exists()).toBe(true);
-    expect(wrapper.find("#logs-box").exists()).toBe(false);
-    expect(wrapper.find("#logs-box").exists()).toBe(false);
+    expect(prompt).toHaveBeenCalledWith("Total: 90THB. Please enter cash:");
   });
 
   it("click #next-order then render CHECKOUT state", async () => {

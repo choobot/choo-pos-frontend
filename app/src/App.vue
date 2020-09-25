@@ -215,7 +215,7 @@
         <h3 class="panel-title text-center">Order completed</h3>
       </div>
       <div class="panel-body">
-        <!-- <div>Receipt No: </div> -->
+        <div class="order-id"><span class="text-bold">Order/Receipt No:</span> {{ receipt.id }}</div>
         <table class="table table-striped">
           <thead class="line-bg">
             <tr>
@@ -584,10 +584,40 @@ export default {
         ) {
           this.payment();
         } else {
-          this.receipt = this.cart;
-          this.receipt.cash = Number(cash);
-          this.receipt.change = this.receipt.cash - this.receipt.total;
-          this.state = this.STATE.RECEIPT;
+          let vm = this;
+          let req = vm.preCart
+          req.cash = Number(cash)
+          vm.isWorking = true;
+          axios
+            .post(API_ENDPOINT + "/order", req, {
+              headers: {
+                Authorization: vm.token,
+              },
+            })
+            .then(function (response) {
+              vm.receipt = response.data;
+              vm.receipt.change = vm.receipt.cash - vm.receipt.total;
+              vm.state = vm.STATE.RECEIPT;
+            })
+            .catch((error) => {
+              if (error.response) {
+                if (error.response.status == 401) {
+                  vm.state = vm.STATE.LOGIN;
+                  delete localStorage.token;
+                }
+                vm.error =
+                  error.response.data.error.code +
+                  " " +
+                  error.response.data.error.error;
+              } else if (error.request) {
+                vm.error = error.request;
+              } else {
+                vm.error = error.message;
+              }
+            })
+            .finally(function (response) {
+              vm.isWorking = false;
+            });
         }
       }
     },
@@ -751,5 +781,9 @@ export default {
   max-width: 100%;
   margin: 0;
   font-weight: normal;
+}
+
+.order-id {
+  margin-bottom: 10px;
 }
 </style>
