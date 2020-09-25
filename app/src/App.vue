@@ -52,6 +52,16 @@
               ><span class="text-underline">L</span>ogs</a
             >
           </li>
+          <li v-bind:class="{ active: state == STATE.SALES_ORDER }">
+            <a
+              id="logs-nav"
+              @click="getSalesOrders"
+              @shortkey="getSalesOrders"
+              v-shortkey="['ctrl', 's']"
+              href="javascript:void(0)"
+              ><span class="text-underline">S</span>ales Orders</a
+            >
+          </li>
         </ul>
         <form class="navbar-form navbar-right">
           <img v-bind:src="user.picture" class="avartar img-circle" />
@@ -317,6 +327,37 @@
       </div>
     </div>
 
+    <div
+      id="sales-order-box"
+      v-if="state == STATE.SALES_ORDER"
+      class="panel panel-default"
+    >
+      <div class="panel-heading">
+        <h3 class="panel-title text-center">Sales Orders</h3>
+      </div>
+      <div class="panel-body">
+        <table class="table table-striped">
+          <thead class="line-bg">
+            <tr>
+              <th scope="col">Date/Time</th>
+              <th scope="col">Order/Receipt Id</th>
+              <th scope="col" class="text-right">Amount</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              is="sales-order-box"
+              class="sales-order-box"
+              v-for="sales_order in sales_orders"
+              v-bind:key="sales_order.id"
+              v-bind:sales_order="sales_order"
+            ></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <span id="working" v-show="isWorking" class="line-bg">Working...</span>
     <span id="error" class="error-bg">{{ error }}</span>
   </div>
@@ -328,6 +369,7 @@ import ProductBox from "./components/ProductBox";
 import CartItemBox from "./components/CartItemBox";
 import OrderItemBox from "./components/OrderItemBox";
 import UserLogBox from "./components/UserLogBox";
+import SalesOrderBox from "./components/SalesOrderBox";
 import QrcodeVue from "qrcode.vue";
 
 const STATE = {
@@ -337,6 +379,7 @@ const STATE = {
   RECEIPT: "receipt",
   LOGS: "logs",
   PUBLIC_RECEIPT: "public_receipt",
+  SALES_ORDER: "sales_order",
 };
 
 const API_ENDPOINT = process.env.API_ENDPOINT;
@@ -365,6 +408,7 @@ export default {
       },
       barcode: "",
       barcodeError: false,
+      sales_orders: [],
     };
   },
   components: {
@@ -373,6 +417,7 @@ export default {
     CartItemBox,
     OrderItemBox,
     UserLogBox,
+    SalesOrderBox,
   },
   mounted: function () {
     this.state = this.STATE.NONE;
@@ -711,6 +756,35 @@ export default {
           vm.receipt = response.data;
           vm.receipt.change = vm.receipt.cash - vm.receipt.total;
           vm.state = vm.STATE.PUBLIC_RECEIPT;
+        })
+        .catch((error) => {
+          if (error.response) {
+            vm.error =
+              error.response.data.error.code +
+              " " +
+              error.response.data.error.error;
+          } else if (error.request) {
+            vm.error = error.request;
+          } else {
+            vm.error = error.message;
+          }
+        })
+        .finally(function (response) {
+          vm.isWorking = false;
+        });
+    },
+    getSalesOrders: function (orderId) {
+      let vm = this;
+      vm.isWorking = true;
+      axios
+        .get(API_ENDPOINT + "/order", {
+          headers: {
+            Authorization: vm.token,
+          },
+        })
+        .then(function (response) {
+          vm.sales_orders = response.data;
+          vm.state = vm.STATE.SALES_ORDER;
         })
         .catch((error) => {
           if (error.response) {

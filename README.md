@@ -13,12 +13,14 @@
     - CTRL + O : L<ins>o</ins>gout
     - CTRL + C : <ins>C</ins>heckout Mode
     - CTRL + L : <ins>L</ins>ogs Mode
+    - CTRL + S : <ins>S</ins>ales Orders Mode    
     - CTRL + P : Cart <ins>P</ins>ayment
     - CTRL + R : Cart <ins>R</ins>eset
     - CTRL + N : <ins>N</ins>ext Order (after Payment)
 - Display ribbon on promotion products only, user can hover to see a promotion detail
 - After payment, order will be created via API
 - Customer can scan QR Code to get E-Receipt
+- Sales Order history
 
 ## Prerequisites for Development
 - Mac or Linux which can run shell script
