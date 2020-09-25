@@ -12,10 +12,11 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "vue": "^2.5.2",
     "axios": "^0.20.0",
     "bootstrap": "^3.3.7",
-    "numeral": "^2.0.6"
+    "numeral": "^2.0.6",
+    "vue": "^2.5.2",
+    "vue-shortkey": "^3.1.7"
   },
   "devDependencies": {
     "@vue/test-utils": "^1.1.0",

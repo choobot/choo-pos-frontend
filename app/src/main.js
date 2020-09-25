@@ -9,6 +9,8 @@ import "bootstrap/dist/css/bootstrap.css";
 
 Vue.config.productionTip = false;
 
+Vue.use(require("vue-shortkey"));
+
 Vue.prototype.getWindow = function () {
   return window;
 };

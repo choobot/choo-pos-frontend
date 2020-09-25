@@ -4,6 +4,11 @@
       <div class="product-cover"><img v-bind:src="product.cover" /></div>
       <div class="product-title text-left">{{ product.title }}</div>
       <div class="product-price text-left">{{ thb(product.price) }}</div>
+      <div
+        class="product-promotion"
+        v-if="product.promotion != ''"
+        v-bind:title="product.promotion"
+      ></div>
     </div>
     <div class="product-add-cart panel-footer text-center">
       <button @click="$emit('add-to-cart', product.id)" class="btn btn-success">

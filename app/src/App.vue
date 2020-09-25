@@ -10,8 +10,8 @@
       </div>
       <div class="panel-body">
         <p>Please login to continue</p>
-        <a id="login-button" href="javascript:void(0)" @click="login"
-          ><img src="./assets/images/btn_login_base.png"
+        <a id="login-button" @click="login" href="javascript:void(0)"
+          ><img src="./assets/images/login-button.png"
         /></a>
       </div>
     </div>
@@ -29,12 +29,24 @@
               active: state == STATE.CHECKOUT || state == STATE.RECEIPT,
             }"
           >
-            <a id="checkout-nav" href="javascript:void(0)" @click="nextOrder"
-              >Checkout</a
+            <a
+              id="checkout-nav"
+              @click="nextOrder"
+              @shortkey="nextOrder"
+              v-shortkey="['ctrl', 'c']"
+              href="javascript:void(0)"
+              ><span class="text-underline">C</span>heckout</a
             >
           </li>
           <li v-bind:class="{ active: state == STATE.LOGS }">
-            <a id="logs-nav" href="javascript:void(0)" @click="logs">Logs</a>
+            <a
+              id="logs-nav"
+              @click="logs"
+              @shortkey="logs"
+              v-shortkey="['ctrl', 'l']"
+              href="javascript:void(0)"
+              ><span class="text-underline">L</span>ogs</a
+            >
           </li>
         </ul>
         <form class="navbar-form navbar-right">
@@ -43,10 +55,12 @@
           <button
             id="logout-button"
             @click="logout"
+            @shortkey="logout"
+            v-shortkey="['ctrl', 'o']"
             type="button"
             class="btn btn-default"
           >
-            Logout
+            Log<span class="text-underline">o</span>ut
           </button>
         </form>
       </div>
@@ -80,6 +94,37 @@
               <h3 class="panel-title text-center">Cart</h3>
             </div>
             <div class="panel-body">
+              <div class="text-center">
+                Please select product or Scan barcode
+              </div>
+              <div id="scan-barcode-box">
+                <form @submit.prevent="scanBarcode" autocomplete="off">
+                  <div class="input-group input-group-md">
+                    <span class="input-group-addon" id="basic-addon1"
+                      ><label id="scan-barcode-label" for="scan-barcode-input"
+                        >Scan</label
+                      ></span
+                    >
+                    <input
+                      id="scan-barcode-input"
+                      ref="scan-barcode-input"
+                      v-model="barcode"
+                      type="text"
+                      class="form-control"
+                      placeholder="Barcode"
+                      aria-describedby="basic-addon1"
+                    />
+                  </div>
+                  <div
+                    v-if="barcodeError"
+                    class="alert alert-danger"
+                    role="alert"
+                  >
+                    <span class="glyphicon glyphicon-exclamation-sign"></span>
+                    Invalid Barcode
+                  </div>
+                </form>
+              </div>
               <table
                 id="cart-items-box"
                 v-if="cart.items.length > 0"
@@ -133,26 +178,27 @@
                   </tr>
                 </tfoot>
               </table>
-              <div v-if="cart.items.length == 0" class="text-center">
-                Please select product
-              </div>
             </div>
             <div v-if="cart.items.length > 0" class="panel-footer text-center">
               <button
                 id="cart-payment"
                 @click="payment"
+                @shortkey="payment"
+                v-shortkey="['ctrl', 'p']"
                 type="button"
                 class="btn btn-lg btn-success"
               >
-                Payment
+                <span class="text-underline">P</span>ayment
               </button>
               <button
                 id="cart-reset"
                 @click="nextOrder"
+                @shortkey="nextOrder"
+                v-shortkey="['ctrl', 'r']"
                 type="button"
                 class="btn btn-default"
               >
-                Reset
+                <span class="text-underline">R</span>eset
               </button>
             </div>
           </div>
@@ -194,21 +240,29 @@
             <tr>
               <td></td>
               <td class="text-bold">Total</td>
-              <td id="order-subtotal" class="text-bold text-right">{{ thb(receipt.subtotal) }}</td>
+              <td id="order-subtotal" class="text-bold text-right">
+                {{ thb(receipt.subtotal) }}
+              </td>
               <td id="order-discount" class="text-bold text-right text-red">
                 {{ thb(receipt.total - receipt.subtotal) }}
               </td>
-              <td id="order-total" class="text-bold text-right">{{ thb(receipt.total) }}</td>
+              <td id="order-total" class="text-bold text-right">
+                {{ thb(receipt.total) }}
+              </td>
             </tr>
             <tr>
               <td></td>
               <td colspan="3" class="text-bold">Cash</td>
-              <td id="order-cash" class="text-bold text-right">{{ thb(receipt.cash) }}</td>
+              <td id="order-cash" class="text-bold text-right">
+                {{ thb(receipt.cash) }}
+              </td>
             </tr>
             <tr>
               <td></td>
               <td colspan="3" class="text-bold">Change</td>
-              <td id="order-change" class="text-bold text-right">{{ thb(receipt.change) }}</td>
+              <td id="order-change" class="text-bold text-right">
+                {{ thb(receipt.change) }}
+              </td>
             </tr>
           </tfoot>
         </table>
@@ -217,6 +271,8 @@
         <button
           id="next-order"
           @click="nextOrder"
+          @shortkey="nextOrder"
+          v-shortkey="['ctrl', 'n']"
           type="button"
           class="btn btn-lg btn-success"
         >
@@ -282,6 +338,7 @@ export default {
       isWorking: false,
       user: {},
       products: null,
+      productsMap: null,
       preCart: {
         items: [],
       },
@@ -292,6 +349,8 @@ export default {
       log: {
         user_logs: [],
       },
+      barcode: "",
+      barcodeError: false,
     };
   },
   components: {
@@ -303,6 +362,12 @@ export default {
   mounted: function () {
     this.state = this.STATE.LOGIN;
     this.checkLogin();
+    setInterval(function () {
+      const barcodeInput = document.getElementById("scan-barcode-input");
+      if (barcodeInput) {
+        barcodeInput.focus();
+      }
+    }, 100);
   },
   methods: {
     checkLogin: function () {
@@ -430,6 +495,10 @@ export default {
         })
         .then(function (response) {
           vm.products = response.data.books;
+          vm.productsMap = {};
+          vm.products.forEach(function (item, index) {
+            vm.productsMap[item.id] = item;
+          });
         })
         .catch((error) => {
           if (error.response) {
@@ -461,12 +530,14 @@ export default {
       this.updateCart();
     },
     removeFromCart: function (itemIndex) {
-      this.cart.items.splice(itemIndex, 1);
-      this.preCart.items.splice(itemIndex, 1);
-      if (this.cart.items.length != 0) {
-        this.updateCart();
-      } else {
-        this.cart.total = 0;
+      if (!this.isWorking) {
+        this.cart.items.splice(itemIndex, 1);
+        this.preCart.items.splice(itemIndex, 1);
+        if (this.cart.items.length != 0) {
+          this.updateCart();
+        } else {
+          this.cart.total = 0;
+        }
       }
     },
     updateCart: function (itemIndex) {
@@ -563,6 +634,17 @@ export default {
           vm.isWorking = false;
         });
     },
+    scanBarcode: function (e) {
+      if (this.barcode != "") {
+        if (this.productsMap[this.barcode] === undefined) {
+          this.barcodeError = true;
+        } else {
+          this.barcodeError = false;
+          this.addToCart(this.barcode);
+        }
+        this.barcode = "";
+      }
+    },
   },
 };
 </script>
@@ -606,6 +688,7 @@ export default {
 
 .product-box .panel-body {
   padding: 0;
+  position: relative;
 }
 
 .product-box .product-title {
@@ -614,6 +697,15 @@ export default {
 
 .product-box .product-price {
   padding: 0 5px 0 5px;
+}
+
+.product-promotion {
+  background: url("./assets/images/promotion.png") no-repeat left top;
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .product-cover img {
@@ -648,5 +740,16 @@ export default {
 
 .text-underline {
   text-decoration: underline;
+}
+
+#scan-barcode-box {
+  padding: 10px 0 10px 0;
+}
+
+#scan-barcode-label {
+  display: inline-block;
+  max-width: 100%;
+  margin: 0;
+  font-weight: normal;
 }
 </style>

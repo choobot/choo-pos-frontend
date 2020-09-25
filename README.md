@@ -7,6 +7,17 @@
 ## Live Demo
 - https://choo-pos.herokuapp.com
 
+## Additional features from requirements
+- User can use Barcode Scanner to scan a product barcode instead of select a product (we can simulate it by fill in a product id from [book.json](https://json-bin.netlify.app/books.json) and press enter key)
+- User can use keyboard shortcuts (after login)
+    - CTRL + O : L<ins>o</ins>gout
+    - CTRL + C : <ins>C</ins>heckout Mode
+    - CTRL + L : <ins>L</ins>ogs Mode
+    - CTRL + P : Cart <ins>P</ins>ayment
+    - CTRL + R : Cart <ins>R</ins>eset
+    - CTRL + N : <ins>N</ins>ext Order (after Payment)
+- Display ribbon on promotion products only, user can hover to see a promotion detail 
+
 ## Prerequisites for Development
 - Mac or Linux which can run shell script
 - Docker
@@ -29,6 +40,7 @@
 ## Tech Stack
 - Vue
 - Vue Test Utils
+- vue-shortkey
 - Jest
 - Axios
 - Bootstrap

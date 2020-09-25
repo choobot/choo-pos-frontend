@@ -1,8 +1,11 @@
 import { shallowMount } from "@vue/test-utils";
 import App from "@/App";
 import axios from "axios";
+import Vue from "vue";
 
 jest.mock("axios");
+
+Vue.use(require("vue-shortkey"));
 
 describe("App", () => {
   const thb = jest.fn((x) => x + "THB");
@@ -212,11 +215,19 @@ describe("App", () => {
   it("call removeFromCart()", async () => {
     const resp = {
       data: {
-        total: 290,
+        total: 0,
         items: [
-          {
-            price: 290,
-            product: {
+
+        ],
+      },
+    };
+    axios.put.mockResolvedValue(resp);
+    const wrapper = shallowMount(App, {
+      data() {
+        return {
+          state: STATE.CHECKOUT,
+          products: [
+            {
               id: "9781473667815",
               cover:
                 "https://d1w7fb2mkkr3kw.cloudfront.net/assets/images/book/mid/9781/4736/9781473667815.jpg",
@@ -226,27 +237,14 @@ describe("App", () => {
               created_at: "2020-09-20T22:04:56Z",
               updated_at: "2020-09-20T22:04:56Z",
             },
-          },
-        ],
-      },
-    };
-    axios.put.mockResolvedValue(resp);
-    const wrapper = shallowMount(App, {
-      data() {
-        return {
-          state: STATE.CHECKOUT,
+          ],
           preCart: {
             items: [
               {
                 product: {
                   id: "9781473667815",
                 },
-              },
-              {
-                product: {
-                  id: "9781473667815",
-                },
-              },
+              }
             ],
           },
           cart: {
@@ -264,20 +262,7 @@ describe("App", () => {
                   created_at: "2020-09-20T22:04:56Z",
                   updated_at: "2020-09-20T22:04:56Z",
                 },
-              },
-              {
-                price: 290,
-                product: {
-                  id: "9781473667815",
-                  cover:
-                    "https://d1w7fb2mkkr3kw.cloudfront.net/assets/images/book/mid/9781/4736/9781473667815.jpg",
-                  price: 290,
-                  title: "A Shout in the Ruins",
-                  status: 1,
-                  created_at: "2020-09-20T22:04:56Z",
-                  updated_at: "2020-09-20T22:04:56Z",
-                },
-              },
+              }
             ],
           },
         };
@@ -287,7 +272,7 @@ describe("App", () => {
       },
     });
     await wrapper.vm.removeFromCart(0);
-    expect(wrapper.vm.cart.items.length).toBe(1);
+    expect(wrapper.vm.cart.items.length).toBe(0);
   });
 
   it("call removeFromCart() and empty", async () => {
