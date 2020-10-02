@@ -1,7 +1,7 @@
 # choo-pos-frontend
 
 ## Note
-- Frontend Repo: https://github.com/choobot/choo-pos-backend
+- Frontend Repo: https://github.com/choobot/choo-pos-frontend
 - Backend Repo: https://github.com/choobot/choo-pos-backend
 
 ## Live Demo
